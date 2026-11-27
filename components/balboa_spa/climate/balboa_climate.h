@@ -18,6 +18,7 @@ namespace esphome
 
     protected:
       BalboaSpa *parent_{nullptr};
+      bool is_high_range_{true};
     };
   }
 }
