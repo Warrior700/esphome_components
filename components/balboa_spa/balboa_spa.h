@@ -32,6 +32,7 @@ namespace esphome
       void set_minute_sensor(sensor::Sensor *minute_sensor) { this->minute_sensor_ = minute_sensor; }
       void set_time_text_sensor(text_sensor::TextSensor *time_text_sensor) { this->time_text_sensor_ = time_text_sensor; }
       void set_heating_status_text_sensor(text_sensor::TextSensor *text) { this->heating_status_text_sensor_ = text; }
+      void set_filter_text_sensor(text_sensor::TextSensor *text) { this->filter_text_sensor_ = text; }
 
       void on_toggle_jet1();
       void on_toggle_jet2();
@@ -166,6 +167,7 @@ namespace esphome
       text_sensor::TextSensor *fault_sensor_{nullptr};
       text_sensor::TextSensor *time_text_sensor_{nullptr};
       text_sensor::TextSensor *heating_status_text_sensor_{nullptr};
+      text_sensor::TextSensor *filter_text_sensor_{nullptr};
     };
   }
 }
