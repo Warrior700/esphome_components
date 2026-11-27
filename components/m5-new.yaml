@@ -1,0 +1,248 @@
+esphome:
+  name: "m5-new"
+  friendly_name: M5 new
+  name_add_mac_suffix: false
+
+esp32:
+  board: m5stack-atom
+  framework:
+    type: arduino
+
+external_components:
+  - source:
+      type: git
+      url: https://github.com/Warrior700/esphome_components
+      ref: main
+    components: [ balboa_spa ]
+    refresh: 0s
+
+logger:
+  baud_rate: 0
+
+api:
+  encryption:
+    key: "**********************************"
+
+ota:
+  - platform: esphome
+#   password: "password"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: "balboa_spa"
+    password: "password"
+
+web_server:
+  port: 80
+  include_internal: false
+  local: true
+
+uart:
+  id: spa_uart_bus
+  tx_pin: GPIO19
+  rx_pin: GPIO22
+  data_bits: 8
+  parity: NONE
+  stop_bits: 1
+  baud_rate: 115200
+  rx_buffer_size: 128
+
+balboa_spa:
+  id: my_spa
+  uart_id: spa_uart_bus
+  temp_sensor:
+    name: "Current Temp"
+  circ_binary_sensor:
+    name: "Circulation Pump"
+  heater_binary_sensor:
+    name: "Heater"
+  blower_binary_sensor:
+    id: spa_blower_state
+    internal: true
+  rest_binary_sensor:
+    id: spa_restmode_state
+    internal: true
+  high_range_binary_sensor:
+    id: spa_highrange_state
+    internal: true
+  hour_sensor:
+    name: "Hour"
+  minute_sensor:
+    name: "Minute"
+  time_text_sensor:
+    name: "Spa Uhrzeit"
+  heating_status_text_sensor:
+    name: "Heizung Status Text"
+  fault_text_sensor:
+    name: "Letzter Fehler"
+
+climate:
+  - platform: balboa_spa
+    balboa_spa_id: my_spa
+    name: "Whirlpool Thermostat"
+
+binary_sensor:
+  - platform: balboa_spa
+    balboa_spa_id: my_spa
+    id: spa_light_state
+    internal: true
+    binary_sensor_datapoint: 20
+
+  - platform: balboa_spa
+    balboa_spa_id: my_spa
+    id: spa_jet1_state
+    internal: true
+    binary_sensor_datapoint: 24
+
+  - platform: balboa_spa
+    balboa_spa_id: my_spa
+    id: spa_jet2_state
+    internal: true
+    binary_sensor_datapoint: 25
+
+  - platform: balboa_spa
+    balboa_spa_id: my_spa
+    name: "Heater Wartezustand"
+    binary_sensor_datapoint: 28
+
+button:
+  - platform: balboa_spa
+    balboa_spa_id: my_spa
+    id: spa_light_btn
+    internal: true
+    button_datapoint: 6
+
+  - platform: balboa_spa
+    balboa_spa_id: my_spa
+    id: spa_jet1_btn
+    internal: true
+    button_datapoint: 1
+
+  - platform: balboa_spa
+    balboa_spa_id: my_spa
+    id: spa_jet2_btn
+    internal: true
+    button_datapoint: 2
+
+  - platform: balboa_spa
+    balboa_spa_id: my_spa
+    id: spa_blower_btn
+    internal: true
+    button_datapoint: 3
+
+  - platform: balboa_spa
+    balboa_spa_id: my_spa
+    id: spa_heating_mode_btn
+    internal: true
+    button_datapoint: 4
+
+  - platform: balboa_spa
+    balboa_spa_id: my_spa
+    id: spa_temp_range_btn
+    internal: true
+    button_datapoint: 5
+
+switch:
+  - platform: template
+    name: "Light"
+    lambda: |-
+      return id(spa_light_state).state;
+    turn_on_action:
+      - if:
+          condition:
+            binary_sensor.is_off: spa_light_state
+          then:
+            - button.press: spa_light_btn
+    turn_off_action:
+      - if:
+          condition:
+            binary_sensor.is_on: spa_light_state
+          then:
+            - button.press: spa_light_btn
+
+  - platform: template
+    name: "Jet 1"
+    lambda: |-
+      return id(spa_jet1_state).state;
+    turn_on_action:
+      - if:
+          condition:
+            binary_sensor.is_off: spa_jet1_state
+          then:
+            - button.press: spa_jet1_btn
+    turn_off_action:
+      - if:
+          condition:
+            binary_sensor.is_on: spa_jet1_state
+          then:
+            - button.press: spa_jet1_btn
+
+  - platform: template
+    name: "Jet 2"
+    lambda: |-
+      return id(spa_jet2_state).state;
+    turn_on_action:
+      - if:
+          condition:
+            binary_sensor.is_off: spa_jet2_state
+          then:
+            - button.press: spa_jet2_btn
+    turn_off_action:
+      - if:
+          condition:
+            binary_sensor.is_on: spa_jet2_state
+          then:
+            - button.press: spa_jet2_btn
+
+  - platform: template
+    name: "Blower"
+    lambda: |-
+      return id(spa_blower_state).state;
+    turn_on_action:
+      - if:
+          condition:
+            binary_sensor.is_off: spa_blower_state
+          then:
+            - button.press: spa_blower_btn
+    turn_off_action:
+      - if:
+          condition:
+            binary_sensor.is_on: spa_blower_state
+          then:
+            - button.press: spa_blower_btn
+
+  - platform: template
+    name: "Rest Mode"
+    lambda: |-
+      return id(spa_restmode_state).state;
+    turn_on_action:
+      - if:
+          condition:
+            binary_sensor.is_off: spa_restmode_state
+          then:
+            - button.press: spa_heating_mode_btn
+    turn_off_action:
+      - if:
+          condition:
+            binary_sensor.is_on: spa_restmode_state
+          then:
+            - button.press: spa_heating_mode_btn
+
+  - platform: template
+    name: "High Temp Range"
+    lambda: |-
+      return id(spa_highrange_state).state;
+    turn_on_action:
+      - if:
+          condition:
+            binary_sensor.is_off: spa_highrange_state
+          then:
+            - button.press: spa_temp_range_btn
+    turn_off_action:
+      - if:
+          condition:
+            binary_sensor.is_on: spa_highrange_state
+          then:
+            - button.press: spa_temp_range_btn
