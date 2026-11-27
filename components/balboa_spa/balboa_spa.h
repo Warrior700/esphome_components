@@ -42,6 +42,7 @@ namespace esphome
       void on_toggle_heatingmode();
       void on_set_time(int hour, int minute);
       void on_set_filtration(int f1hour, int f1min, int f1durhour, int f1durmin, int f2enab, int f2hour, int f2min, int f2durhour, int f2durmin);
+      void request_filter_settings() { this->have_filtersettings = 0; }
       void set_heater_enabled(bool enabled);
       void register_binary_sensor_callback(uint8_t datapoint, const std::function<void(bool)> &func);
       void register_sensor_callback(uint8_t datapoint, const std::function<void(float)> &func);
