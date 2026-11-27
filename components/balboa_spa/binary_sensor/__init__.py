@@ -1,4 +1,3 @@
-
 from esphome.components import binary_sensor
 import esphome.config_validation as cv
 import esphome.codegen as cg
