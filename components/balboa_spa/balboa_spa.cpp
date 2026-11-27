@@ -105,6 +105,12 @@ namespace esphome
       case 27:
         attach(this->heating_enabled_state_update_);
         break;
+      case 28:
+        attach(this->heater_waiting_state_update_);
+        break;
+      case 29:
+        attach(this->high_range_state_update_);
+        break;
       }
     }
 
@@ -249,6 +255,22 @@ namespace esphome
         time_text_sensor_->publish_state(std::string(buf));
       }
 
+      // 15:Flags Byte 10 / Heat status (0=aus, 1=heizt, 2=wartet) - zuerst dekodieren!
+      uint8_t heat = (this->Q_in[15] >> 4) & 0x03;
+      bool is_heating = (heat == 1);
+      bool is_waiting = (heat == 2);
+
+      ESP_LOGD("Spa/heatstate/state", is_heating ? STRON : STROFF);
+      SpaState.heater = is_heating ? 1 : 0;
+      SpaState.heater_waiting = is_waiting ? 1 : 0;
+
+      if (this->heater_binary_sensor_ != nullptr)
+        this->heater_binary_sensor_->publish_state(is_heating);
+      if (this->heater_state_update_ != nullptr)
+        this->heater_state_update_(is_heating);
+      if (this->heater_waiting_state_update_ != nullptr)
+        this->heater_waiting_state_update_(is_waiting);
+
       // 10:Flag Byte 5 - Heating Mode
       switch (this->Q_in[10])
       {
@@ -258,12 +280,14 @@ namespace esphome
         if (this->rest_binary_sensor_ != nullptr)
           this->rest_binary_sensor_->publish_state(false);
         if (this->rest_state_update_ != nullptr)
-          this->rest_state_update_(0);
+          this->rest_state_update_(false);
         if (this->heating_enabled_state_update_ != nullptr)
           this->heating_enabled_state_update_(true);
         if (this->heating_status_text_sensor_ != nullptr)
         {
-          this->heating_status_text_sensor_->publish_state(SpaState.heater ? std::string("enabled • heating") : std::string("enabled • idle"));
+          this->heating_status_text_sensor_->publish_state(
+              SpaState.heater ? std::string("enabled • heating") :
+              (SpaState.heater_waiting ? std::string("enabled • waiting") : std::string("enabled • idle")));
         }
         break;
       case 3: // Ready-in-Rest
@@ -276,7 +300,9 @@ namespace esphome
           this->heating_enabled_state_update_(true);
         if (this->heating_status_text_sensor_ != nullptr)
         {
-          this->heating_status_text_sensor_->publish_state(SpaState.heater ? std::string("enabled • heating") : std::string("enabled • idle"));
+          this->heating_status_text_sensor_->publish_state(
+              SpaState.heater ? std::string("enabled • heating") :
+              (SpaState.heater_waiting ? std::string("enabled • waiting") : std::string("enabled • idle")));
         }
         break;
       case 1:
@@ -296,54 +322,23 @@ namespace esphome
       }
       this->rest_state_known_ = true;
 
-      // 15:Flags Byte 10 / Heat status (FIX: 2 Bits auswerten: Bit 4 und 5)
-      uint8_t heat = (this->Q_in[15] >> 4) & 0x03; // 0=aus, 1=heizt, 2=wartet
-      if (heat == 0)
-      {
-        ESP_LOGD("Spa/heatstate/state", STROFF);
-        if (this->heater_binary_sensor_ != nullptr)
-          this->heater_binary_sensor_->publish_state(false);
-        if (this->heater_state_update_ != nullptr)
-          this->heater_state_update_(false);
-        SpaState.heater = 0;
-        if (this->heating_status_text_sensor_ != nullptr)
-        {
-          if (SpaState.restmode)
-            this->heating_status_text_sensor_->publish_state("disabled (rest)");
-          else
-            this->heating_status_text_sensor_->publish_state("enabled • idle");
-        }
-      }
-      else if (heat == 1 || heat == 2)
-      {
-        ESP_LOGD("Spa/heatstate/state", STRON);
-        if (this->heater_binary_sensor_ != nullptr)
-          this->heater_binary_sensor_->publish_state(true);
-        if (this->heater_state_update_ != nullptr)
-          this->heater_state_update_(true);
-        SpaState.heater = 1;
-        if (this->heating_status_text_sensor_ != nullptr)
-        {
-          if (SpaState.restmode)
-            this->heating_status_text_sensor_->publish_state("disabled (rest)");
-          else
-            this->heating_status_text_sensor_->publish_state("enabled • heating");
-        }
-      }
-
       d = bitRead(this->Q_in[15], 2);
       if (d == 0)
       {
         ESP_LOGD("Spa/highrange/state", STROFF); // LOW
         if (high_range_binary_sensor_ != nullptr)
-          high_range_binary_sensor_->publish_state(0);
+          high_range_binary_sensor_->publish_state(false);
+        if (this->high_range_state_update_ != nullptr)
+          this->high_range_state_update_(false);
         SpaState.highrange = 0;
       }
       else if (d == 1)
       {
         ESP_LOGD("Spa/highrange/state", STRON); // HIGH
         if (high_range_binary_sensor_ != nullptr)
-          high_range_binary_sensor_->publish_state(1);
+          high_range_binary_sensor_->publish_state(true);
+        if (this->high_range_state_update_ != nullptr)
+          this->high_range_state_update_(true);
         SpaState.highrange = 1;
       }
 
