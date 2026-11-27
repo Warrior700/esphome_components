@@ -8,7 +8,6 @@ namespace esphome
 
         void BalboaBinarySensor::setup()
         {
-            
             this->parent_->register_binary_sensor_callback(this->binary_sensor_id_, [this](const bool state)
                                                     { this->publish_state(state); });
         }
