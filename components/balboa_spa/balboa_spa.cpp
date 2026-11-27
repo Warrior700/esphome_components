@@ -456,11 +456,11 @@ namespace esphome
       {
         char buf[64];
         snprintf(buf, sizeof(buf), "F1: %02u:%02u (%uh %02um) | F2: %s %02u:%02u (%uh %02um)",
-                 (unsigned)SpaFilterSettings.filt1Hour, (unsigned)SpaFilterSettings.filt1Minute,
-                 (unsigned)SpaFilterSettings.filt1DurationHour, (unsigned)SpaFilterSettings.filt1DurationMinute,
+                 SpaFilterSettings.filt1Hour, SpaFilterSettings.filt1Minute,
+                 SpaFilterSettings.filt1DurationHour, SpaFilterSettings.filt1DurationMinute,
                  SpaFilterSettings.filt2Enable ? "AN" : "AUS",
-                 (unsigned)SpaFilterSettings.filt2Hour, (unsigned)SpaFilterSettings.filt2Minute,
-                 (unsigned)SpaFilterSettings.filt2DurationHour, (unsigned)SpaFilterSettings.filt2DurationMinute);
+                 SpaFilterSettings.filt2Hour, SpaFilterSettings.filt2Minute,
+                 SpaFilterSettings.filt2DurationHour, SpaFilterSettings.filt2DurationMinute);
         this->filter_text_sensor_->publish_state(std::string(buf));
       }
 
@@ -718,7 +718,7 @@ namespace esphome
                 this->Q_out.push(0x00);
                 this->Q_out.push(0x01);
                 ESP_LOGD("Spa/config/status", "Getting config");
-                have_config = 1;
+                // have_config = 1;
               }
               else if (have_faultlog == 0)
               {
@@ -728,8 +728,8 @@ namespace esphome
                 this->Q_out.push(0x20);
                 this->Q_out.push(0xFF);
                 this->Q_out.push(0x00);
-                have_faultlog = 1;
-                ESP_LOGD("Spa/debug/have_faultlog", "requesting fault log, #1");
+                // have_faultlog = 1;
+                ESP_LOGD("Spa/debug/have_faultlog", "requesting fault log");
               }
               else if ((have_filtersettings == 0) && (have_faultlog == 2))
               {
@@ -739,8 +739,8 @@ namespace esphome
                 this->Q_out.push(0x01);
                 this->Q_out.push(0x00);
                 this->Q_out.push(0x00);
-                ESP_LOGD("Spa/debug/have_filtersettings", "requesting filter settings, #1");
-                have_filtersettings = 1;
+                ESP_LOGD("Spa/debug/have_filtersettings", "requesting filter settings");
+                // have_filtersettings = 1;
               }
               else
               {
@@ -763,17 +763,11 @@ namespace esphome
           }
           else if (this->Q_in[2] == id && this->Q_in[4] == 0x2E)
           {
-            if (last_state_crc != this->Q_in[this->Q_in[1]])
-            {
-              decodeSettings();
-            }
+            decodeSettings();
           }
           else if (this->Q_in[2] == id && this->Q_in[4] == 0x28)
           {
-            if (last_state_crc != this->Q_in[this->Q_in[1]])
-            {
-              decodeFault();
-            }
+            decodeFault();
           }
           else if (this->Q_in[2] == 0xFF && this->Q_in[4] == 0x13)
           {
@@ -784,11 +778,8 @@ namespace esphome
           }
           else if (this->Q_in[2] == id && this->Q_in[4] == 0x23)
           {
-            if (last_state_crc != this->Q_in[this->Q_in[1]])
-            {
-              ESP_LOGD("Spa/debug/have_faultlog", "decoding filter settings");
-              decodeFilterSettings();
-            }
+            ESP_LOGD("Spa/debug/have_filtersettings", "decoding filter settings");
+            decodeFilterSettings();
           }
 
           yield();
