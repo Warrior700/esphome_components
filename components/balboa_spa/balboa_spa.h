@@ -52,12 +52,14 @@ namespace esphome
     protected:
       std::function<void(bool)> light_state_update_{nullptr};
       std::function<void(bool)> heater_state_update_{nullptr};
+      std::function<void(bool)> heater_waiting_state_update_{nullptr};
       std::function<void(bool)> circulation_pump_state_update_{nullptr};
       std::function<void(bool)> rest_state_update_{nullptr};
       std::function<void(bool)> heating_enabled_state_update_{nullptr};
       std::function<void(bool)> jet1_state_update_{nullptr};
       std::function<void(bool)> jet2_state_update_{nullptr};
       std::function<void(bool)> blower_state_update_{nullptr};
+      std::function<void(bool)> high_range_state_update_{nullptr};
       std::function<void(float)> current_temp_state_update_{nullptr};
       std::function<void(float)> target_temp_state_update_{nullptr};
 
@@ -96,6 +98,7 @@ namespace esphome
         uint8_t restmode : 1;
         uint8_t highrange : 1;
         uint8_t heater : 1;
+        uint8_t heater_waiting : 1;
         uint8_t hour : 5;
         uint8_t minutes : 6;
         uint8_t circ : 1;
