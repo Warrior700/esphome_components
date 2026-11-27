@@ -21,7 +21,7 @@ logger:
 
 api:
   encryption:
-    key: "oquFk+S1e5CC+8DpfTfOIJeMDBNt6X7dN/EVthLS3cY="
+    key: "**********************************"
 
 ota:
   - platform: esphome
