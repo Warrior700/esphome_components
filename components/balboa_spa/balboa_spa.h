@@ -7,9 +7,11 @@
 #include "esphome/components/text_sensor/text_sensor.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #include "esphome/core/log.h"
+
 #define STROFF "OFF"
 #define STRON "ON"
 #define bitRead(value, bit) (((value) >> (bit)) & 0x01)
+
 namespace esphome
 {
   namespace balboa_spa
@@ -26,15 +28,20 @@ namespace esphome
       void set_blower_binary_sensor(binary_sensor::BinarySensor *blower_binary_sensor);
       void set_rest_binary_sensor(binary_sensor::BinarySensor *rest_binary_sensor);
       void set_high_range_binary_sensor(binary_sensor::BinarySensor *high_range_binary_sensor);
-  void set_hour_sensor(sensor::Sensor *hour_sensor) { this->hour_sensor_ = hour_sensor; }
-  void set_minute_sensor(sensor::Sensor *minute_sensor) { this->minute_sensor_ = minute_sensor; }
-  void set_time_text_sensor(text_sensor::TextSensor *time_text_sensor) { this->time_text_sensor_ = time_text_sensor; }
-  void set_heating_status_text_sensor(text_sensor::TextSensor *text) { this->heating_status_text_sensor_ = text; }
+      void set_hour_sensor(sensor::Sensor *hour_sensor) { this->hour_sensor_ = hour_sensor; }
+      void set_minute_sensor(sensor::Sensor *minute_sensor) { this->minute_sensor_ = minute_sensor; }
+      void set_time_text_sensor(text_sensor::TextSensor *time_text_sensor) { this->time_text_sensor_ = time_text_sensor; }
+      void set_heating_status_text_sensor(text_sensor::TextSensor *text) { this->heating_status_text_sensor_ = text; }
+
       void on_toggle_jet1();
       void on_toggle_jet2();
+      void on_toggle_blower();
       void on_toggle_light();
-  void on_set_time(int hour, int minute);
-  void set_heater_enabled(bool enabled);
+      void on_toggle_range();
+      void on_toggle_heatingmode();
+      void on_set_time(int hour, int minute);
+      void on_set_filtration(int f1hour, int f1min, int f1durhour, int f1durmin, int f2enab, int f2hour, int f2min, int f2durhour, int f2durmin);
+      void set_heater_enabled(bool enabled);
       void register_binary_sensor_callback(uint8_t datapoint, const std::function<void(bool)> &func);
       void register_sensor_callback(uint8_t datapoint, const std::function<void(float)> &func);
       void on_set_temp(float temp);
@@ -43,19 +50,20 @@ namespace esphome
       float temperature{NAN};
 
     protected:
-      std::function<void(bool)>  light_state_update_{nullptr};
-      std::function<void(bool)>  heater_state_update_{nullptr};
-      std::function<void(bool)>  circulation_pump_state_update_{nullptr};
-      std::function<void(bool)>  rest_state_update_{nullptr};
-  std::function<void(bool)>  heating_enabled_state_update_{nullptr};
-      std::function<void(bool)>  jet1_state_update_{nullptr};
-      std::function<void(bool)>  jet2_state_update_{nullptr};
-      std::function<void(bool)>  blower_state_update_{nullptr};
-      std::function<void(float)>  current_temp_state_update_{nullptr};
-      std::function<void(float)>  target_temp_state_update_{nullptr};
-  CircularBuffer<uint8_t, 35> Q_in;
-  CircularBuffer<uint8_t, 35> Q_out;
-  uint8_t x, i;
+      std::function<void(bool)> light_state_update_{nullptr};
+      std::function<void(bool)> heater_state_update_{nullptr};
+      std::function<void(bool)> circulation_pump_state_update_{nullptr};
+      std::function<void(bool)> rest_state_update_{nullptr};
+      std::function<void(bool)> heating_enabled_state_update_{nullptr};
+      std::function<void(bool)> jet1_state_update_{nullptr};
+      std::function<void(bool)> jet2_state_update_{nullptr};
+      std::function<void(bool)> blower_state_update_{nullptr};
+      std::function<void(float)> current_temp_state_update_{nullptr};
+      std::function<void(float)> target_temp_state_update_{nullptr};
+
+      CircularBuffer<uint8_t, 35> Q_in;
+      CircularBuffer<uint8_t, 35> Q_out;
+      uint8_t x, i;
 
       uint8_t last_state_crc = 0x00;
       uint8_t send = 0x00;
@@ -64,11 +72,20 @@ namespace esphome
       uint8_t setminute = 0x00;
       uint8_t id = 0x00;
       unsigned long lastrx = 0;
+
+      uint8_t setfilt1Hour = 0x00;
+      uint8_t setfilt1Minute = 0x00;
+      uint8_t setfilt1DurationHour = 0x00;
+      uint8_t setfilt1DurationMinute = 0x00;
+      uint8_t setfilt2HourEnable = 0x00;
+      uint8_t setfilt2Minute = 0x00;
+      uint8_t setfilt2DurationHour = 0x00;
+      uint8_t setfilt2DurationMinute = 0x00;
+
       char have_config = 0;
       char have_faultlog = 0;
       char have_filtersettings = 0;
-  bool rest_state_known_{false};
-  // Removed unused minute throttling variables
+      bool rest_state_known_{false};
 
       struct
       {
@@ -144,7 +161,7 @@ namespace esphome
       sensor::Sensor *hour_sensor_{nullptr};
       sensor::Sensor *minute_sensor_{nullptr};
       text_sensor::TextSensor *fault_sensor_{nullptr};
-  text_sensor::TextSensor *time_text_sensor_{nullptr};
+      text_sensor::TextSensor *time_text_sensor_{nullptr};
       text_sensor::TextSensor *heating_status_text_sensor_{nullptr};
     };
   }
