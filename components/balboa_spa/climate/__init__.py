@@ -1,10 +1,9 @@
-
 from esphome.components import climate
 import esphome.config_validation as cv
 import esphome.codegen as cg
 from esphome.const import CONF_ID
-from  .. import balboa_spa_ns, CONF_BALBOA_SPA_ID, BalboaSpa
-#DEPENDENCIES = ["balboa_spa"]
+from .. import balboa_spa_ns, CONF_BALBOA_SPA_ID, BalboaSpa
+
 BalboaClimate = balboa_spa_ns.class_("BalboaClimate", climate.Climate, cg.Component)
 
 CONFIG_SCHEMA = cv.All(
