@@ -11,6 +11,7 @@ namespace esphome
             switch (this->button_id)
             {
             case 0:
+            case 6:
                 this->parent_->on_toggle_light();
                 break;
             case 1:
@@ -18,6 +19,15 @@ namespace esphome
                 break;
             case 2:
                 this->parent_->on_toggle_jet2();
+                break;
+            case 3:
+                this->parent_->on_toggle_blower();
+                break;
+            case 4:
+                this->parent_->on_toggle_heatingmode();
+                break;
+            case 5:
+                this->parent_->on_toggle_range();
                 break;
             }
         }
