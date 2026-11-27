@@ -21,7 +21,7 @@ logger:
 
 api:
   encryption:
-    key: "********************************************"
+    key: "**********************************************"
 
 ota:
   - platform: esphome
@@ -269,7 +269,14 @@ button:
             (int)id(f2_dur_hour).state,
             (int)id(f2_dur_min).state
           );
-
+          
+  - platform: template
+    name: "Filterzeiten aktualisieren"
+    icon: "mdi:refresh"
+    on_press:
+      - lambda: |-
+          id(my_spa).request_filter_settings();
+          
 switch:
   - platform: template
     name: "Light"
