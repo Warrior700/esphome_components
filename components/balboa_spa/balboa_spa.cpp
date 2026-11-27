@@ -452,6 +452,18 @@ namespace esphome
       setfilt2DurationHour = SpaFilterSettings.filt2DurationHour;
       setfilt2DurationMinute = SpaFilterSettings.filt2DurationMinute;
 
+      if (this->filter_text_sensor_ != nullptr)
+      {
+        char buf[64];
+        snprintf(buf, sizeof(buf), "F1: %02u:%02u (%uh %02um) | F2: %s %02u:%02u (%uh %02um)",
+                 (unsigned)SpaFilterSettings.filt1Hour, (unsigned)SpaFilterSettings.filt1Minute,
+                 (unsigned)SpaFilterSettings.filt1DurationHour, (unsigned)SpaFilterSettings.filt1DurationMinute,
+                 SpaFilterSettings.filt2Enable ? "AN" : "AUS",
+                 (unsigned)SpaFilterSettings.filt2Hour, (unsigned)SpaFilterSettings.filt2Minute,
+                 (unsigned)SpaFilterSettings.filt2DurationHour, (unsigned)SpaFilterSettings.filt2DurationMinute);
+        this->filter_text_sensor_->publish_state(std::string(buf));
+      }
+
       have_filtersettings = 2;
     }
 
